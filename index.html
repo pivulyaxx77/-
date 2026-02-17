@@ -7,123 +7,43 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2250%22 fill=%22black%22 font-weight=%22bold%22>UR</text></svg>">
     
     <style>
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .chat-container {
-            width: 95%;
-            max-width: 550px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-header {
-            background: #ffffff;
-            color: #1a1a1a;
-            padding: 25px;
-            text-align: center;
-            font-size: 1.4em;
-            font-weight: bold;
-            border-bottom: 1px solid #eee;
-        }
-        #chat-window {
-            height: 450px;
-            padding: 20px;
-            overflow-y: auto;
-            background: #fafafa;
-            display: flex;
-            flex-direction: column;
-        }
-        .message {
-            margin-bottom: 15px;
-            padding: 12px 18px;
-            border-radius: 15px;
-            max-width: 85%;
-            line-height: 1.4;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .chat-container { width: 95%; max-width: 550px; background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .chat-header { background: #ffffff; color: #1a1a1a; padding: 20px; text-align: center; font-size: 1.3em; font-weight: bold; border-bottom: 1px solid #eee; }
+        #chat-window { height: 400px; padding: 20px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; }
+        .message { margin-bottom: 15px; padding: 12px 18px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95em; }
         .ai-msg { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
         .user-msg { background: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        
-        .quote-area {
-            font-style: italic;
-            font-size: 0.9em;
-            color: #555;
-            padding: 10px 25px;
-            text-align: center;
-            border-top: 1px solid #eee;
-            background: white;
-        }
-        .input-area-container {
-            padding: 15px 20px 10px 20px;
-            background: white;
-        }
-        .input-row {
-            display: flex;
-            gap: 10px;
-        }
-        input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            font-size: 1em;
-        }
-        button {
-            padding: 10px 20px;
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover { background: #444; }
-
-        .disclaimer {
-            font-size: 0.75em;
-            color: #999;
-            text-align: center;
-            padding-top: 8px;
-            padding-bottom: 5px;
-        }
+        .quote-area { font-style: italic; font-size: 0.85em; color: #555; padding: 10px 25px; text-align: center; border-top: 1px solid #eee; background: white; min-height: 40px; }
+        .input-area-container { padding: 15px 20px 10px 20px; background: white; }
+        .input-row { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        button { padding: 10px 20px; background: #1a1a1a; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        .disclaimer { font-size: 0.7em; color: #999; text-align: center; padding-top: 8px; }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
-    <div class="chat-header">
-        Привіт! Я Юр! Чим можу тобі допомогти?
-    </div>
-    
+    <div class="chat-header">Привіт! Я Юр! Чим можу тобі допомогти?</div>
     <div id="chat-window">
-        <div class="message ai-msg">Вітаю! Я твій помічник по правилах та конституції нашого сервера. Запитуй!</div>
+        <div class="message ai-msg">Вітаю! Я твій РП-помічник. Запитуй про правила чи конституцію!</div>
     </div>
-
-    <div class="quote-area" id="random-quote">
-        </div>
-
+    <div class="quote-area" id="random-quote">Завантаження цитати...</div>
     <div class="input-area-container">
         <div class="input-row">
-            <input type="text" id="user-input" placeholder="Напишіть ваше питання..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Відправити</button>
+            <input type="text" id="user-input" placeholder="Напишіть питання..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button id="send-btn" onclick="sendMessage()">Відправити</button>
         </div>
-        <div class="disclaimer">
-            ШІ може робити помилки. Перевіряйте важливу інформацію у адміністрації сервера UKRAINE RP.
-        </div>
+        <div class="disclaimer">ШІ може робити помилки. Перевіряйте важливу інформацію у адміністрації сервера UKRAINE RP.</div>
     </div>
 </div>
 
 <script>
+    // ВСТАВТЕ ВАШ КЛЮЧ ТУТ
+    const API_KEY = "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"; 
+
     const quotes = [
         "RP — це не гра в перемогу, це гра в історію.",
         "RP — це мистецтво жити іншим життям, не забуваючи про повагу до інших.",
@@ -133,51 +53,53 @@
         "RP — це місце, де твоя фантазія стає реальністю."
     ];
 
-    // Встановлення випадкової цитати при завантаженні
     document.getElementById('random-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-
-    function handleKeyPress(e) {
-        if (e.key === 'Enter') sendMessage();
-    }
 
     async function sendMessage() {
         const inputField = document.getElementById('user-input');
+        const btn = document.getElementById('send-btn');
         const chatWindow = document.getElementById('chat-window');
         const userText = inputField.value.trim();
 
-        if (!userText) return;
+        if (!userText || btn.disabled) return;
 
-        // Відображення тексту користувача
+        // Додаємо повідомлення користувача
         chatWindow.innerHTML += `<div class="message user-msg">${userText}</div>`;
         inputField.value = '';
+        btn.disabled = true;
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
-        // Зміна цитати при кожному запиті для динамічності
+        try {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": "google/gemini-2.0-flash-exp:free",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "Ти — ШІ помічник на ім'я Юр для сервера UKRAINE RP. Твоя база знань: правила (ukrainerpeh.xyz/#rules) та конституція (ukrainerpeh.xyz/#constitution). Допомагай розібратися в правилах та РП термінах (DM, MG, SK тощо). Якщо питання не стосується правил або конституції — ввічливо скажи, що не знаєш цієї інформації. Відповідай українською мовою."
+                        },
+                        { "role": "user", "content": userText }
+                    ]
+                })
+            });
+
+            const data = await response.json();
+            const aiResponse = data.choices[0].message.content;
+
+            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${aiResponse}</div>`;
+        } catch (error) {
+            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Помилка зв'язку. Перевірте API ключ або спробуйте пізніше.</div>`;
+        }
+
+        btn.disabled = false;
         document.getElementById('random-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-
-        // Імітація обробки (в реальності тут має бути запит до нейромережі)
-        setTimeout(() => {
-            let response = "";
-            const textLow = userText.toLowerCase();
-
-            // Проста логіка фільтрації тем
-            const isRelated = textLow.includes("правил") || 
-                              textLow.includes("конституц") || 
-                              textLow.includes("термін") || 
-                              textLow.includes("рп") || 
-                              textLow.includes("rp");
-
-            if (isRelated) {
-                response = "Я можу допомогти з правилами або термінами! Повну інформацію можна знайти в розділах <a href='https://ukrainerpeh.xyz/#rules' target='_blank'>Правила</a> та <a href='https://ukrainerpeh.xyz/#constitution' target='_blank'>Конституція</a>. Яке саме правило вас цікавить?";
-            } else {
-                response = "Вибачте, я не володію цією інформацією. Я можу відповідати лише на питання, що стосуються правил сервера, конституції та RP термінів.";
-            }
-
-            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${response}</div>`;
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }, 800);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 </script>
-
 </body>
 </html>
