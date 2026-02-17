@@ -41,7 +41,7 @@
 </div>
 
 <script>
-    // ВСТАВТЕ ВАШ КЛЮЧ ТУТ
+    // ВСТАВТЕ ВАШ КЛЮЧ ТУТ (Я залишив той, що ви скинули, але без зайвих пробілів)
     const API_KEY = "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"; 
 
     const quotes = [
@@ -88,12 +88,26 @@
                 })
             });
 
-            const data = await response.json();
-            const aiResponse = data.choices[0].message.content;
+            // Додаткова перевірка на помилку від самого OpenRouter
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Помилка API:", errorData);
+                throw new Error(`Помилка серверу: ${response.status}`);
+            }
 
-            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${aiResponse}</div>`;
+            const data = await response.json();
+            
+            // Перевірка, чи прийшла відповідь
+            if(data.choices && data.choices.length > 0) {
+                 const aiResponse = data.choices[0].message.content;
+                 chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${aiResponse}</div>`;
+            } else {
+                 chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Вибач, я не зміг сформулювати відповідь. Спробуй ще раз.</div>`;
+            }
+
         } catch (error) {
-            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Помилка зв'язку. Перевірте API ключ або спробуйте пізніше.</div>`;
+            console.error(error);
+            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Сталася технічна помилка. Перевірте консоль (F12) або спробуйте пізніше.</div>`;
         }
 
         btn.disabled = false;
