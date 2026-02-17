@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__, static_folder="static")
 
-API_KEY = os.getenv("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")
+API_KEY = os.getenv("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")
 
 @app.route("/")
 def index():
@@ -22,7 +22,7 @@ def chat():
                 "Content-Type": "application/json"
             },
             json={
-                "model": "openai/gpt-4o-mini",
+                "model": "arcee-ai/trinity-large-preview:free",
                 "messages": [
                     {
                         "role": "system",
