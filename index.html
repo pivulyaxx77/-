@@ -11,16 +11,29 @@
         .chat-container { width: 95%; max-width: 550px; background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
         .chat-header { background: #ffffff; color: #1a1a1a; padding: 20px; text-align: center; font-size: 1.3em; font-weight: bold; border-bottom: 1px solid #eee; }
         #chat-window { height: 400px; padding: 20px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; }
-        .message { margin-bottom: 15px; padding: 12px 18px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95em; }
+        .message { margin-bottom: 15px; padding: 12px 18px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95em; position: relative; }
         .ai-msg { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
         .user-msg { background: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .thinking-msg { font-style: italic; color: #888; background: transparent; padding: 5px 18px; }
         .quote-area { font-style: italic; font-size: 0.85em; color: #555; padding: 10px 25px; text-align: center; border-top: 1px solid #eee; background: white; min-height: 40px; }
         .input-area-container { padding: 15px 20px 10px 20px; background: white; }
         .input-row { display: flex; gap: 10px; }
         input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        button { padding: 10px 20px; background: #1a1a1a; color: white; border: none; border-radius: 8px; cursor: pointer; }
-        button:disabled { background: #ccc; }
+        button { padding: 10px 20px; background: #1a1a1a; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         .disclaimer { font-size: 0.7em; color: #999; text-align: center; padding-top: 8px; }
+        
+        /* Проста анімація крапок */
+        .dots::after {
+            content: '';
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0% { content: ''; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
+        }
     </style>
 </head>
 <body>
@@ -41,7 +54,6 @@
 </div>
 
 <script>
-    // ВСТАВТЕ ВАШ КЛЮЧ ТУТ (Я залишив той, що ви скинули, але без зайвих пробілів)
     const API_KEY = "AIzaSyA2yEQDxbdxBT_38F8oLl4dcKBynZb3pPc"; 
 
     const quotes = [
@@ -63,10 +75,19 @@
 
         if (!userText || btn.disabled) return;
 
-        // Додаємо повідомлення користувача
+        // 1. Додаємо повідомлення користувача
         chatWindow.innerHTML += `<div class="message user-msg">${userText}</div>`;
         inputField.value = '';
         btn.disabled = true;
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        // 2. Створюємо елемент "Думаю" з анімацією
+        const thinkingId = "thinking-" + Date.now();
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.id = thinkingId;
+        thinkingDiv.className = "message ai-msg thinking-msg";
+        thinkingDiv.innerHTML = `* /me Думаю<span class="dots"></span>`;
+        chatWindow.appendChild(thinkingDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
         try {
@@ -77,37 +98,36 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "model": "gen-lang-client-0459913561",
+                    "model": "google/gemini-2.0-flash-lite-preview-02-05:free",
                     "messages": [
                         {
                             "role": "system",
-                            "content": "Ти — ШІ помічник на ім'я Юр для сервера UKRAINE RP. Ти не можеш вигадувати правила сервера UKRAINE RP, все що ти можеш давати користувачу, це інформацію з своєї бази знань. Використовуй лише її. Якщо тебе запитають про пункт 1 статтю 1 у правилах сервера, ти маєш відповідсти, що у пункті 1 статті 1 йдеться мова про RP-Образи. Опис цього пункту: Поважай інших гравців і уникай RP-образів, які можуть когось зачепити.Покарання за порушення:  через суд – штраф до 8 000€ (RP-порушення) Твоя база знань: правила сервера UKRAINE RP (https://ukrainerpeh.xyz/#rule-1, https://ukrainerpeh.xyz/#rule-2, https://ukrainerpeh.xyz/#rule-3, https://ukrainerpeh.xyz/#rule-4, https://ukrainerpeh.xyz/#rule-5, https://ukrainerpeh.xyz/#rule-6, https://ukrainerpeh.xyz/#rule-7, https://ukrainerpeh.xyz/#rule-8, https://ukrainerpeh.xyz/#rule-9, https://ukrainerpeh.xyz/#rule-10, https://ukrainerpeh.xyz/#rule-11, https://ukrainerpeh.xyz/#rule-12, https://ukrainerpeh.xyz/#rule-13, https://ukrainerpeh.xyz/#rule-14, https://ukrainerpeh.xyz/#rule-15, https://ukrainerpeh.xyz/#rule-16, https://ukrainerpeh.xyz/#rule-17, https://ukrainerpeh.xyz/#rule-18, https://ukrainerpeh.xyz/#rule-19, https://ukrainerpeh.xyz/#rule-20, https://ukrainerpeh.xyz/#rule-21, https://ukrainerpeh.xyz/#rule-22, https://ukrainerpeh.xyz/#rule-23, https://ukrainerpeh.xyz/#rule-24, https://ukrainerpeh.xyz/#rule-25, https://ukrainerpeh.xyz/#rule-26, https://ukrainerpeh.xyz/#rule-27, https://ukrainerpeh.xyz/#rule-28, https://ukrainerpeh.xyz/#rule-29, https://ukrainerpeh.xyz/#rule-30, https://ukrainerpeh.xyz/#rule-31, https://ukrainerpeh.xyz/#rule-32, https://ukrainerpeh.xyz/#rule-33, https://ukrainerpeh.xyz/#rule-34, https://ukrainerpeh.xyz/#rule-35, https://ukrainerpeh.xyz/#rule-36, https://ukrainerpeh.xyz/#rule-37, https://ukrainerpeh.xyz/#rule-38, https://ukrainerpeh.xyz/#rule-39, https://ukrainerpeh.xyz/#rule-40, https://ukrainerpeh.xyz/#rule-41, https://ukrainerpeh.xyz/#rule-42, https://ukrainerpeh.xyz/#rule-43, https://ukrainerpeh.xyz/#rule-44, https://ukrainerpeh.xyz/#rule-45, https://ukrainerpeh.xyz/#rule-46, https://ukrainerpeh.xyz/#rule-47) та конституція (ukrainerpeh.xyz/#constitution). Допомагай розібратися в правилах та РП термінах (RDM, MG, RK тощо). Якщо питання не стосується правил або конституції — ввічливо скажи, що не знаєш цієї інформації. Відповідай українською мовою."
+                            "content": "Ти — ШІ помічник на ім'я Юр для сервера UKRAINE RP. Твоя база знань: правила сервера (пункт 1 стаття 1 - RP-образи, штраф до 8000€) та конституція. Якщо питання не по темі — ввічливо відмов."
                         },
                         { "role": "user", "content": userText }
                     ]
                 })
             });
 
-            // Додаткова перевірка на помилку від самого OpenRouter
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Помилка API:", errorData);
-                throw new Error(`Помилка серверу: ${response.status}`);
-            }
-
             const data = await response.json();
             
-            // Перевірка, чи прийшла відповідь
+            // Видаляємо статус "Думаю"
+            const thinkingElem = document.getElementById(thinkingId);
+            if (thinkingElem) thinkingElem.remove();
+
+            // 3. Виводимо реальну відповідь
             if(data.choices && data.choices.length > 0) {
                  const aiResponse = data.choices[0].message.content;
                  chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${aiResponse}</div>`;
             } else {
-                 chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Вибач, я не зміг сформулювати відповідь. Спробуй ще раз.</div>`;
+                 chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Вибач, я не зміг отримати відповідь.</div>`;
             }
 
         } catch (error) {
+            const thinkingElem = document.getElementById(thinkingId);
+            if (thinkingElem) thinkingElem.remove();
             console.error(error);
-            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Сталася технічна помилка. Перевірте консоль (F12) або спробуйте пізніше.</div>`;
+            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Технічна помилка з'єднання.</div>`;
         }
 
         btn.disabled = false;
