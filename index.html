@@ -11,10 +11,15 @@
         .chat-container { width: 95%; max-width: 550px; background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
         .chat-header { background: #ffffff; color: #1a1a1a; padding: 20px; text-align: center; font-size: 1.3em; font-weight: bold; border-bottom: 1px solid #eee; }
         #chat-window { height: 400px; padding: 20px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; }
-        .message { margin-bottom: 15px; padding: 12px 18px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95em; position: relative; }
+        
+        /* Базові стилі повідомлень */
+        .message { margin-bottom: 15px; padding: 12px 18px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95em; position: relative; word-wrap: break-word; }
         .ai-msg { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
         .user-msg { background: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .thinking-msg { font-style: italic; color: #888; background: transparent; padding: 5px 18px; }
+        
+        /* Стиль для /me Думаю */
+        .thinking-msg { font-style: italic; color: #777; background: transparent; align-self: flex-start; padding: 5px 10px; margin-bottom: 5px; border: none; }
+        
         .quote-area { font-style: italic; font-size: 0.85em; color: #555; padding: 10px 25px; text-align: center; border-top: 1px solid #eee; background: white; min-height: 40px; }
         .input-area-container { padding: 15px 20px 10px 20px; background: white; }
         .input-row { display: flex; gap: 10px; }
@@ -23,7 +28,7 @@
         button:disabled { background: #ccc; cursor: not-allowed; }
         .disclaimer { font-size: 0.7em; color: #999; text-align: center; padding-top: 8px; }
         
-        /* Проста анімація крапок */
+        /* Анімація крапок */
         .dots::after {
             content: '';
             animation: blink 1.5s infinite;
@@ -41,7 +46,7 @@
 <div class="chat-container">
     <div class="chat-header">Привіт! Я Юр! Чим можу тобі допомогти?</div>
     <div id="chat-window">
-        <div class="message ai-msg">Вітаю! Я твій РП-помічник. Запитуй про правила чи конституцію!</div>
+        <div class="message ai-msg">Вітаю! Я твій РП-помічник. Запитуй про правила чи конституцію сервера UKRAINE RP!</div>
     </div>
     <div class="quote-area" id="random-quote">Завантаження цитати...</div>
     <div class="input-area-container">
@@ -49,20 +54,20 @@
             <input type="text" id="user-input" placeholder="Напишіть питання..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button id="send-btn" onclick="sendMessage()">Відправити</button>
         </div>
-        <div class="disclaimer">ШІ може робити помилки. Перевіряйте важливу інформацію у адміністрації сервера UKRAINE RP.</div>
+        <div class="disclaimer">ШІ може робити помилки. Перевіряйте важливу інформацію у адміністрації UKRAINE RP.</div>
     </div>
 </div>
 
 <script>
-    const API_KEY = "AIzaSyAeGymPNfV-lIJg4ElStomk66n0OEtTQ68"; 
+    // ВСТАВТЕ ВАШ КЛЮЧ З GOOGLE AI STUDIO ТУТ
+    const API_KEY = "AIzaSyCELC_RDidETytvasvr1Bmdetp-UUXqX8E"; 
 
     const quotes = [
         "RP — це не гра в перемогу, це гра в історію.",
-        "RP — це мистецтво жити іншим життям, не забуваючи про повагу до інших.",
+        "RP — це мистецтво жити іншим життям.",
         "Повага до RP інших — основа сильного сервера.",
         "Кожен персонаж — це шанс зробити світ гри живішим.",
-        "Не шукай легких шляхів — шукай цікавих історій.",
-        "RP — це місце, де твоя фантазія стає реальністю."
+        "Не шукай легких шляхів — шукай цікавих історій."
     ];
 
     document.getElementById('random-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
@@ -81,53 +86,47 @@
         btn.disabled = true;
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
-        // 2. Створюємо елемент "Думаю" з анімацією
-        const thinkingId = "thinking-" + Date.now();
+        // 2. Створюємо анімоване повідомлення "/me Думаю"
+        const thinkingId = "think-" + Date.now();
         const thinkingDiv = document.createElement('div');
         thinkingDiv.id = thinkingId;
-        thinkingDiv.className = "message ai-msg thinking-msg";
+        thinkingDiv.className = "message thinking-msg";
         thinkingDiv.innerHTML = `* /me Думаю<span class="dots"></span>`;
         chatWindow.appendChild(thinkingDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
         try {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            // Використовуємо пряме посилання на Google Gemini API
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    "model": "gemini-2.5-flash-native-audio-preview-12-2025",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "Ти — ШІ помічник на ім'я Юр для сервера UKRAINE RP. Твоя база знань: правила сервера (пункт 1 стаття 1 - RP-образи, штраф до 8000€) та конституція. Якщо питання не по темі — ввічливо відмов."
-                        },
-                        { "role": "user", "content": userText }
-                    ]
+                    "contents": [{
+                        "parts": [{
+                            "text": `Ти — ШІ помічник на ім'я Юр для сервера UKRAINE RP. Твоя база знань: правила сервера та конституція (ukrainerpeh.xyz). Якщо запитують про пункт 1 статтю 1 правил: це RP-образи. Опис: Поважай інших гравців і уникай RP-образів. Покарання: штраф до 8 000€. Якщо питання не стосується сервера — ввічливо відмов. Відповідай українською мовою. Питання користувача: ${userText}`
+                        }]
+                    }]
                 })
             });
 
             const data = await response.json();
             
-            // Видаляємо статус "Думаю"
+            // Видаляємо статус "Думаю" перед відповіддю
             const thinkingElem = document.getElementById(thinkingId);
             if (thinkingElem) thinkingElem.remove();
 
-            // 3. Виводимо реальну відповідь
-            if(data.choices && data.choices.length > 0) {
-                 const aiResponse = data.choices[0].message.content;
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                 const aiResponse = data.candidates[0].content.parts[0].text;
                  chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${aiResponse}</div>`;
             } else {
-                 chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Вибач, я не зміг отримати відповідь.</div>`;
+                 throw new Error("Некоректна відповідь від API");
             }
 
         } catch (error) {
             const thinkingElem = document.getElementById(thinkingId);
             if (thinkingElem) thinkingElem.remove();
             console.error(error);
-            chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> Технічна помилка з'єднання.</div>`;
+            chatWindow.innerHTML += `<div class="message ai-msg" style="color: #d9534f;"><b>Юр:</b> Вибач, сталася помилка. Перевір API-ключ або спробуй пізніше.</div>`;
         }
 
         btn.disabled = false;
