@@ -74,7 +74,7 @@ if prompt := st.chat_input("Запитай щось про правила..."):
         try:
             # Використовуємо модель Qwen 2.5 72B (вона дуже розумна)
             response = client.chat.completions.create(
-                model="qwen/qwen3-coder:free", 
+                model="qwen/qwen3-next-80b-a3b-instruct:free", 
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     *st.session_state.messages
