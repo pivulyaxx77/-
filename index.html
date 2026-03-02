@@ -1,143 +1,93 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UR AI Helper</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2250%22 fill=%22black%22 font-weight=%22bold%22>UR</text></svg>">
-    
+import streamlit as st
+import google.generativeai as genai
+import random
+
+# 1. Налаштування сторінки
+st.set_page_config(page_title="UR AI Helper", page_icon="🤖")
+
+# Стилізація під ваш HTML-код
+st.markdown("""
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .chat-container { width: 95%; max-width: 550px; background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
-        .chat-header { background: #ffffff; color: #1a1a1a; padding: 20px; text-align: center; font-size: 1.3em; font-weight: bold; border-bottom: 1px solid #eee; }
-        #chat-window { height: 400px; padding: 20px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; }
-        
-        /* Базові стилі повідомлень */
-        .message { margin-bottom: 15px; padding: 12px 18px; border-radius: 15px; max-width: 85%; line-height: 1.4; font-size: 0.95em; position: relative; word-wrap: break-word; }
-        .ai-msg { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user-msg { background: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        
-        /* Стиль для /me Думаю */
-        .thinking-msg { font-style: italic; color: #777; background: transparent; align-self: flex-start; padding: 5px 10px; margin-bottom: 5px; border: none; }
-        
-        .quote-area { font-style: italic; font-size: 0.85em; color: #555; padding: 10px 25px; text-align: center; border-top: 1px solid #eee; background: white; min-height: 40px; }
-        .input-area-container { padding: 15px 20px 10px 20px; background: white; }
-        .input-row { display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        button { padding: 10px 20px; background: #1a1a1a; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .disclaimer { font-size: 0.7em; color: #999; text-align: center; padding-top: 8px; }
-        
-        /* Анімація крапок */
-        .dots::after {
-            content: '';
-            animation: blink 1.5s infinite;
-        }
-        @keyframes blink {
-            0% { content: ''; }
-            33% { content: '.'; }
-            66% { content: '..'; }
-            100% { content: '...'; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="chat-container">
-    <div class="chat-header">Привіт! Я Юр! Чим можу тобі допомогти?</div>
-    <div id="chat-window">
-        <div class="message ai-msg">Вітаю! Я твій РП-помічник. Запитуй про правила чи конституцію сервера UKRAINE RP!</div>
-    </div>
-    <div class="quote-area" id="random-quote">Завантаження цитати...</div>
-    <div class="input-area-container">
-        <div class="input-row">
-            <input type="text" id="user-input" placeholder="Напишіть питання..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button id="send-btn" onclick="sendMessage()">Відправити</button>
-        </div>
-        <div class="disclaimer">ШІ може робити помилки. Перевіряйте важливу інформацію у адміністрації UKRAINE RP.</div>
-    </div>
-</div>
-
-<script>
-    // ВСТАВТЕ ВАШ КЛЮЧ З GOOGLE AI STUDIO ТУТ
-    const API_KEY = "AIzaSyCELC_RDidETytvasvr1Bmdetp-UUXqX8E"; 
-
-    const quotes = [
-        "RP — це не гра в перемогу, це гра в історію.",
-        "RP — це мистецтво жити іншим життям.",
-        "Повага до RP інших — основа сильного сервера.",
-        "Кожен персонаж — це шанс зробити світ гри живішим.",
-        "Не шукай легких шляхів — шукай цікавих історій."
-    ];
-
-    document.getElementById('random-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-
-    async function sendMessage() {
-        const inputField = document.getElementById('user-input');
-        const btn = document.getElementById('send-btn');
-        const chatWindow = document.getElementById('chat-window');
-        const userText = inputField.value.trim();
-
-        if (!userText || btn.disabled) return;
-
-        // 1. Додаємо повідомлення користувача
-        chatWindow.innerHTML += `<div class="message user-msg">${userText}</div>`;
-        inputField.value = '';
-        btn.disabled = true;
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-
-        // 2. Створюємо анімоване повідомлення "/me Думаю"
-        const thinkingId = "think-" + Date.now();
-        const thinkingDiv = document.createElement('div');
-        thinkingDiv.id = thinkingId;
-        thinkingDiv.className = "message thinking-msg";
-        thinkingDiv.innerHTML = `* /me Думаю<span class="dots"></span>`;
-        chatWindow.appendChild(thinkingDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-
-        try {
-            // Використовуємо пряме посилання на Google Gemini API
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "contents": [{
-                        "parts": [{
-                            "text": `Ти штучний інтелект, який має допомагати гравцям з правилами та з RP-термінами. Зараз твоя база знань це: 
-                            Пункт 1 "Повага, антибулінг та особистий простір". 
-                            Пункт 1 стаття 1: Стаття 1. RP-образи
-Поважай інших гравців і уникай RP-образів, які можуть когось зачепити. Покарання за порушення: Покарання через суд – штраф до 8 000€ (RP-порушення). 
-Якщо тебе питають про щось, що не пов'язано з RP та з сервером UKRAINE RP в Emergency Hamburgh, Ти маєш лояльно відповісти, що не знаєш відповіді, бо ти помічника сервера
-UKRAINE RP в EH:: ${userText}`
-                        }]
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            
-            // Видаляємо статус "Думаю" перед відповіддю
-            const thinkingElem = document.getElementById(thinkingId);
-            if (thinkingElem) thinkingElem.remove();
-
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                 const aiResponse = data.candidates[0].content.parts[0].text;
-                 chatWindow.innerHTML += `<div class="message ai-msg"><b>Юр:</b> ${aiResponse}</div>`;
-            } else {
-                 throw new Error("Некоректна відповідь від API");
-            }
-
-        } catch (error) {
-            const thinkingElem = document.getElementById(thinkingId);
-            if (thinkingElem) thinkingElem.remove();
-            console.error(error);
-            chatWindow.innerHTML += `<div class="message ai-msg" style="color: #d9534f;"><b>Юр:</b> Вибач, сталася помилка. Перевір API-ключ або спробуй пізніше.</div>`;
-        }
-
-        btn.disabled = false;
-        document.getElementById('random-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+    .stApp { background-color: #f0f2f5; }
+    .chat-header { 
+        background: white; 
+        padding: 20px; 
+        text-align: center; 
+        font-size: 1.5rem; 
+        font-weight: bold; 
+        border-radius: 15px 15px 0 0;
+        border-bottom: 1px solid #eee;
+        color: #1a1a1a;
     }
-</script>
-</body>
-</html>
+    .disclaimer { 
+        font-size: 0.8rem; 
+        color: #999; 
+        text-align: center; 
+        margin-top: 10px; 
+    }
+    </style>
+    <div class="chat-header">Привіт! Я Юр! Чим можу тобі допомогти?</div>
+    """, unsafe_allow_html=True)
+
+# 2. База знань та цитати
+QUOTES = [
+    "RP — це не гра в перемогу, це гра в історію.",
+    "RP — це мистецтво жити іншим життям.",
+    "Повага до RP інших — основа сильного сервера.",
+    "Кожен персонаж — це шанс зробити світ гри живішим.",
+    "Не шукай легких шляхів — шукай цікавих історій."
+]
+
+RULES_CONTEXT = """
+Ти штучний інтелект, який має допомагати гравцям з правилами та з RP-термінами. 
+Твоя база знань: 
+Пункт 1 "Повага, антибулінг та особистий простір". 
+Пункт 1 стаття 1: RP-образи. Поважай інших гравців і уникай RP-образів. 
+Покарання: штраф до 8 000€ (через суд). 
+Якщо питання не про RP або сервер UKRAINE RP в Emergency Hamburg, відповідай, що не знаєш відповіді.
+"""
+
+# 3. Налаштування API
+if "GOOGLE_API_KEY" not in st.secrets:
+    st.error("Помилка: GOOGLE_API_KEY не знайдено в Secrets!")
+    st.stop()
+
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# 4. Логіка чату
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Вітаю! Я твій РП-помічник. Запитуй про правила чи конституцію сервера UKRAINE RP!"}
+    ]
+
+# Відображення повідомлень
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# Поле вводу
+if prompt := st.chat_input("Напишіть питання..."):
+    # Додаємо повідомлення користувача
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Відповідь ШІ
+    with st.chat_message("assistant"):
+        placeholder = st.empty()
+        placeholder.markdown("* /me Думаю...*") # Ефект "Думаю" як у вашому HTML
+        
+        try:
+            full_prompt = f"{RULES_CONTEXT}\n\nКористувач: {prompt}"
+            response = model.generate_content(full_prompt)
+            
+            answer = response.text
+            placeholder.markdown(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+        except Exception as e:
+            placeholder.error(f"Виникла помилка: {e}")
+
+# 5. Нижня частина (Цитата та Дисклеймер)
+st.markdown(f"<div style='font-style: italic; text-align: center; padding: 10px; color: #555;'>— {random.choice(QUOTES)}</div>", unsafe_allow_html=True)
+st.markdown("<div class='disclaimer'>ШІ може робити помилки. Перевіряйте важливу інформацію у адміністрації UKRAINE RP.</div>", unsafe_allow_html=True)
